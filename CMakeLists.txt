@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 3.5)
-project (CPlantBox LANGUAGES CXX)
+cmake_minimum_required (VERSION 3.18)
+project (CPlantBox)
 
 option(PIAFMUNCH "Enable optional PIAFMUNCH code" ON)
 # set compiler options
@@ -27,3 +27,23 @@ add_subdirectory(src)
 
 # build tutorial (TODO)
 # INCLUDE(UseLATEX.cmake)
+
+# CTest smoke hook to run curated pytest subset from source root
+include(CTest)
+if(BUILD_TESTING)
+  add_test(
+    NAME smoke_pytest
+    COMMAND python3 -m pytest -q 
+            test/test_organ.py 
+            test/test_organparameter.py 
+            test/test_rootparameter.py 
+            test/test_leafparameter.py 
+            test/test_leaf.py 
+            test/test_hydraulic_parameters.py
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
+  # Deterministic defaults and module path
+  set_tests_properties(smoke_pytest PROPERTIES 
+    ENVIRONMENT "OMP_NUM_THREADS=1;PYTHONPATH=${CMAKE_SOURCE_DIR};${CMAKE_SOURCE_DIR}/src"
+  )
+endif()
