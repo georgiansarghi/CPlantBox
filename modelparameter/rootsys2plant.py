@@ -8,7 +8,7 @@ import plantbox as pb
 plant_path = "structural/plant"
 root_path = "structural/rootsystem"
 goal_path = "structural/"
-filename = "Anagallis_femina_Leitner_2010"
+# filename = "Anagallis_femina_Leitner_2010"
 
 # plant = pb.Plant()
 # plant.readParameters(root_path +"/"+ filename +".xml",verbose = True)
