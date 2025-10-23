@@ -12,7 +12,7 @@ filename = "Anagallis_femina_Leitner_2010"
 
 # plant = pb.Plant()
 # plant.readParameters(root_path +"/"+ filename +".xml",verbose = True)
-# plant.writeParameters(goal_path + "/" + filename +".xml")
+# plant.writeParameters(goal_path + "/" + filename +".xml"W)
 
 
 plant_directory = os.fsencode(plant_path)
