@@ -143,7 +143,7 @@ public:
 
 	//for photosynthesis and phloem module:
 	void calcExchangeZoneCoefs() override;
-	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
+	std::vector<int> getSegmentIds(int ot = -1) const override;//needed in phloem module
 	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module
 	double getEffectiveRadius(int si) override;
 	double getPerimeter(int si_, double l_) override; ///< Perimeter of the segment [cm] overloaded by @see MappedPlant::getPerimeter

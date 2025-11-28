@@ -9,6 +9,8 @@ RUN apt-get update && \
       cmake \
       git \
       pkg-config \
+      libsuitesparse-dev \
+      libsundials-dev \
       libgl1 \
       libxrender1 \
       libxt6 \

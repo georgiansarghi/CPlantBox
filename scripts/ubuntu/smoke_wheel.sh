@@ -21,6 +21,7 @@ docker_run_project "$IMAGE_NAME" "$PLATFORM" /src $'\
   echo "[ubuntu] Building wheel..."\n\
   python3 -m pip -q install -U pip build\n\
   rm -rf dist/ _skbuild/\n\
+  export CMAKE_ARGS="${CMAKE_ARGS:-} -DUSE_SYSTEM_SUITESPARSE=ON -DBUNDLE_SUITESPARSE=OFF -DUSE_SYSTEM_SUNDIALS=ON -DBUNDLE_SUNDIALS=OFF"\n\
   python3 -m build --wheel\n\
   echo "[ubuntu] Wheel built:" && ls -lh dist/*.whl\n\
   echo "[ubuntu] Installing into temp venv and running minimal simulate..."\n\

@@ -1,142 +1,69 @@
-## CPlantBox Packaging & Wheels — Next Steps Plan (2025)
+# Build & Packaging Plan
 
-### Context and current state
+## Context
 
-Over the last iteration, we modernized packaging and stabilized cross‑platform wheels:
+- Objective: deliver reproducible binary builds (wheels) and pave the way for continuous delivery without depending on plant-science domain expertise.
+- Scope: stabilise build workflows, prepare CI to emit artifacts, and reduce maintenance burden for future testing collaborations.
 
-- Packaging/build
-  - Adopted `pyproject.toml` with `scikit-build-core`; green wheel builds on Linux manylinux and macOS (local).
-  - CMake hygiene: modern Python discovery, safe defaults (Release), portable flags, IPO/LTO disabled for container reliability, corrected SuiteSparse link order.
-  - Linux manylinux wheels (x86_64, aarch64) build and repair via `auditwheel`; artifacts smoke‑tested.
-- Data and import stability
-  - Packaged structural `modelparameter/**` subset; added `plantbox.data_path()`; tests/examples migrated selectively.
-- Golden headless test
-  - Unified runner `scripts/common/golden_test.py`; standardized render geometry; tolerant similarity (>= 0.9); preserves generated and reference images.
-  - Reliable headless execution: manylinux wheel smoke is executed in an Ubuntu headless container (Xvfb + Mesa) for stability; VTK pinned per arch (amd64: 9.2.6, arm64: 9.5.0).
-- Scripts reorganization
-  - New tree under `scripts/` with platform subfolders and common helpers (`env.sh`, `docker.sh`, `logging.sh`).
-  - Manylinux build/test in `scripts/manylinux/{build,test}`; Ubuntu guardrail in `scripts/ubuntu/{build,test}`; macOS `build/` and `test/` in place; legacy scripts archived.
+## Prominent Issues
 
-Result: We can build, repair, and run the headless golden test for Linux manylinux wheels (CPython 3.9–3.12 on x86_64 and aarch64), and validate macOS wheels on the host via the same golden. Similarity scores are stable (~0.90–0.95).
+1. **Ad-hoc build orchestration**
+   - Wheel production relies on bespoke bash scripts per platform (e.g. `scripts/manylinux/build/build-wheels.sh`, `scripts/ubuntu/smoke_wheel.sh`).
+   - Each script injects its own CMake flags and dependency handling, causing drift and repeated logic.
+2. **Fragile dependency configuration**
+   - `src/CMakeLists.txt` hard-codes IMPORTED libraries for SuiteSparse/SUNDIALS and hand-toggles cache variables to cope with missing `libpython` artefacts.
+   - System vs bundled dependency selection is inconsistent; Ubuntu builds initially failed due to absent `libklu.a` while manylinux expects system packages.
+3. **Vendor code management**
+   - Large third-party code lives in `src/external/` as copied sources without version pinning or dedicated CMake targets, complicating updates and obscuring provenance.
+4. **Repository pollution with build artefacts**
+   - Wheel outputs under `wheelhouse/` (macOS, manylinux, Ubuntu) are tracked, hiding source diffs and encouraging manual promotion of binaries.
+5. **Sparse test coverage and slow feedback**
+   - Current validation is limited to a headless visualization golden image and a basic import/simulate smoke script; no unit or integration test layers exist.
+6. **Lack of CI integration**
+   - No automated workflow builds wheels or publishes artefacts. Manual runs are time-consuming and error prone.
 
----
+## Recommended Actions (ordered)
 
-## Plan — Phases and tasks
+1. **Stabilise environment definitions**
+   - Capture exact toolchains for macOS, Ubuntu, and manylinux (x86_64, aarch64) using container definitions or documented Homebrew requirements.
+   - Freeze Python versions and base images; ensure container builds install SuiteSparse/SUNDIALS consistently.
+2. **Streamline Python discovery in CMake**
+   - Replace the current fallback logic with a single `find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)` and consume `Python3::Module`.
+   - Remove script-provided overrides (`Python3_EXECUTABLE` etc.) unless cross-compiling demands them.
+3. **Normalize dependency handling**
+   - Write or adopt `FindSuiteSparse.cmake` / `FindSUNDIALS.cmake` modules. Use `target_link_libraries` with imported targets rather than manual `IMPORTED_LOCATION` switching.
+   - Decide between vendored static archives or system packages per platform, then codify the choice via cache defaults rather than script flags.
+4. **Modularise external sources**
+   - Promote third-party components in `src/external` to submodules or `FetchContent` declarations with explicit version tags.
+   - Encapsulate each dependency in its own CMake target to isolate compilation flags and simplify upgrades.
+5. **Modernise the top-level CMake project**
+   - Convert global include directories to target-scoped properties.
+   - Extract compiler settings, IPO/LTO, sanitizer toggles into `cmake/Toolchain` or similar for re-use across builds.
+6. **Rework scripting layer**
+   - Replace the bespoke bash scripts with thin wrappers around `pipx run build` or `python -m build`, relying on consistent `CMAKE_ARGS` rather than inline command branching.
+   - Ensure scripts only orchestrate environment setup and artifact collection.
+7. **Introduce CI wheel matrix**
+   - Add GitHub Actions workflows that run builds for Py39–Py312 on manylinux x86_64 and aarch64, plus macOS ARM (if feasible).
+   - Upload wheels via `actions/upload-artifact`; gate merges on successful builds.
+8. **Remove artefacts from version control**
+   - Update `.gitignore` to exclude `wheelhouse/`, `dist/`, `_skbuild/` and purge tracked binaries.
+   - Document how to retrieve CI artifacts instead of relying on committed wheels.
+9. **Layer testing strategy**
+   - Add fast unit tests for computational kernels (e.g. structural/functional C++ components exposed via pybind11).
+   - Preserve headless golden tests as slow integration checks; run them nightly or on demand.
+   - Prepare fixtures so domain researchers can extend scenarios without touching the build pipeline.
+10. **Document workflows and maintenance**
+    - Extend `README.md` or a dedicated `CONTRIBUTING.md` with instructions for local wheel builds, CI expectations, and dependency upgrades.
 
-We focus on clear, shippable steps. Check off tasks as they complete; keep notes succinct.
+## Next Steps Checklist
 
-### Priorities and execution order
+- [ ] Lock container images / toolchains for macOS, Ubuntu, manylinux (x86_64 + aarch64).
+- [ ] Simplify Python discovery in `src/CMakeLists.txt` and remove script overrides.
+- [ ] Replace manual SuiteSparse/SUNDIALS imports with proper `find_package` modules.
+- [ ] Externalise `src/external` dependencies (submodules or FetchContent) with version tracking.
+- [ ] Update `.gitignore`; remove committed wheels from the repository history.
+- [ ] Introduce GitHub Actions workflow building wheels and uploading artifacts per Python version/architecture.
+- [ ] Expand automated tests beyond golden screenshots; define unit and integration layers.
+- [ ] Document the standard build/test process for developers and researchers.
 
-- Priority: macOS developer and wheel flows first (fast local iteration on Apple Silicon host).
-- Then: shared hardening (golden polish, size/strip) and Linux stabilization.
-- CI: bring up macOS lanes first, then add Linux manylinux lanes.
-
-### Phase 1 — macOS completion (PRIORITY)
-
-Why this phase: Our primary development machine is an Apple Silicon Mac, and macOS builds run fastest locally. Completing the macOS loop first maximizes iteration speed, gives immediate developer feedback, and delivers a high‑quality user experience for the largest contributor base before we generalize elsewhere.
-
-- [ ] `scripts/macos/run_all.sh` orchestrator: editable smoke → curated/golden → build/repair → per‑interpreter smoke.
-- [ ] `scripts/macos/dev_editable.sh` (new) using Homebrew deps; fast inner‑loop.
-- [ ] `scripts/macos/run_tutorials_headless.sh` with curated headless‑safe examples using `plantbox.data_path()`.
-- [ ] Delocation diagnostics and policy
-  - `delocate-listdeps --all` preflight + fail‑fast on missing/non‑system deps.
-  - RPATH audit on repaired `_plantbox*.so`.
-  - Autodetect/enforce `MACOSX_DEPLOYMENT_TARGET` (arm64 default 15.0 unless overridden); detect Brew min‑OS of linked dylibs and warn/fail if mismatched.
-- [ ] Optional: universal2 evaluation (or stay per‑arch with clear guidance).
-- [ ] Speed‑ups for macOS local builds
-  - Reuse a persistent venv for smoke; skip reinstall if unchanged.
-  - Ensure Ninja is used; set `CMAKE_OSX_ARCHITECTURES` explicitly; pass `-DCMAKE_BUILD_TYPE=Release`.
-  - Gate expensive steps behind flags (e.g., `--rebuild-third-party`).
-
-### Phase 2 — Stabilization and hardening (Linux + shared)
-
-Why this phase: After fast macOS iteration, we need cross‑platform rigor. Finalizing dependency switches ensures maintainers can pick system vs bundled libs safely; size/strip keeps artifacts lean; golden polish reduces flakes across headless environments; script UX and manifests improve operability and traceability. This phase converts “works on my machine” into reproducible, auditable outputs on all Linux targets while keeping shared tooling consistent.
-
-- [ ] Finalize dependency switches in CMake
-  - `USE_SYSTEM_SUITESPARSE` / `USE_SYSTEM_SUNDIALS` (default OFF for wheels)
-  - `BUNDLE_SUITESPARSE` / `BUNDLE_SUNDIALS` (default ON for wheels)
-  - Enforce defaults automatically for `SKBUILD=ON`; document overrides.
-- [ ] Wheel size/strip and audits
-  - Add strip step and print size summaries per repaired wheel.
-  - Always run `auditwheel show` and capture external deps in logs.
-- [ ] Golden test polish
-  - Preflight diagnostics if golden asset missing; actionable guidance.
-  - `CPB_VERBOSE=1` gate for extra logs.
-  - Optional: `CPB_HEADLESS_LINE_MODE=1` rendering path to further reduce aliasing.
-- [ ] Script UX
-  - Add `-h/--help` to key scripts; consistent error messages.
-  - Document env knobs in `scripts/README.md` (`CPB_GOLDEN_OS`, `CPB_GOLDEN_THRESH`, `CPB_DOWNSCALE`, `CPB_DIFF_THRESH`).
-- [ ] Wheelhouse manifests
-  - Emit `index.txt` in each wheelhouse subdir with timestamp, git describe, python tag(s), tool versions.
-
-Notes:
-
-- Keep default golden enabled in smokes; continue using Ubuntu headless container to execute manylinux golden.
-
-### Phase 3 — cibuildwheel + CI (start with macOS)
-
-Why this phase: Once macOS is reliable and shared tooling is hardened, automating builds/tests ensures repeatability and broad coverage. Starting with macOS leverages the work in Phase 1 and brings fast signal in CI; adding Linux next extends coverage to our distribution targets.
-
-- [ ] Add cibuildwheel configuration
-  - Linux: manylinux2014 `x86_64 aarch64`, CPython 3.9–3.12.
-  - macOS: `x86_64 arm64` (or universal2 if chosen); repair with `delocate`.
-  - Repair commands: Linux `auditwheel repair`, macOS `delocate-wheel`.
-- [ ] GitHub Actions (or CI of choice)
-  - Start with macOS lanes (arm64, x86_64), cache, artifact upload.
-  - Add Linux lanes next.
-  - Post‑install golden smokes:
-    - macOS: run unified golden on the runner host.
-    - Linux: run unified golden inside our Ubuntu headless container against the produced manylinux wheel.
-  - Tag workflow to publish release artifacts (manual for now).
-- [ ] Nightly/cron smoke job (latest main): build one wheel per platform and run golden smokes.
-
-### Phase 4 — Developer UX and docs
-
-Why this phase: Great tooling without guidance slows adoption. Consolidated docs and helper scripts reduce onboarding time, standardize workflows, and improve reliability across contributors.
-
-- [ ] Expand `scripts/README.md` with quickstarts per platform and env knobs.
-- [ ] Top‑level `scripts/run.sh` dispatcher for common tasks.
-- [ ] Tutorial migration
-  - Extend migration to `plantbox.data_path()` where appropriate; retain legacy compat.
-  - Curate packaged data to keep wheels lean; consider TOML packaging once stable.
-- [ ] Contributor docs: build from source, smokes, wheels, troubleshooting.
-
-### Phase 5 — Versioning and releases
-
-- [ ] Reintroduce SCM versioning (preferred: classic `setuptools_scm` writing `plantbox/_version.py`).
-- [ ] Update release helper(s): tag, build matrix locally/CI, verify, publish.
-- [ ] Keep CHANGELOG snippet in releases (auto‑generated or manual).
-
-### Phase 6 — Typing and IDE experience (macOS dev loop benefit)
-
-Why this phase: The compiled extension hides symbols from static tooling, degrading IDE assistance. Shipping stubs and richer pybind11 metadata makes the API discoverable, improves code completion and inline docs, and reduces user friction—especially impactful for the macOS dev loop we prioritize.
-
-Problem: IDEs and static analyzers do not see symbols like `Plant` on `plantbox` because the API is defined in a C++ extension. We need to ship stubs and improve introspection.
-
-- [ ] Publish `.pyi` stubs with the wheel
-  - Generate initial stubs using `pybind11-stubgen` (CI/build step) or `stubgen`, then curate a minimal public surface (e.g., `Plant`, `SegmentAnalyser`, key functions).
-  - Place curated stubs under `plantbox/` (e.g., `plantbox/__init__.pyi` plus module stubs) so editors and type checkers resolve attributes.
-  - Ensure stubs are included in wheels via packaging config (CMake install or `tool.scikit-build` include).
-- [ ] Improve runtime introspection/docstrings
-  - In pybind11 bindings, add `py::arg("name")` and docstrings to functions/constructors; disambiguate overloads with `py::overload_cast` to expose clean signatures.
-  - Expose `__all__` on the module; keep thin Python shim `plantbox/__init__.py` re‑exporting the C++ module to centralize docs and helpers.
-- [ ] Optional: mark package typed
-  - If we add inline type hints in the Python shim, include `plantbox/py.typed` (PEP 561). Not required if we rely solely on `.pyi` stubs.
-- [ ] Validation
-  - Verify symbol visibility and signatures in VS Code (Pylance) and PyCharm.
-  - Add a minimal `mypy` job (non‑blocking) to sanity‑check stubs for basic usage.
-
----
-
-## Quick commands (current)
-
-- Linux manylinux wheels (build & smoke):
-  - Build: `./scripts/manylinux/build/build-wheels.sh x86_64` (or `aarch64`)
-  - Smoke: `./scripts/manylinux/test/test-wheel.sh x86_64` (reuses Ubuntu headless golden)
-- Ubuntu smoke (guardrail): `./scripts/ubuntu/run_all.sh`
-- macOS wheel validation (host): `./scripts/macos/test/test-wheel.sh`
-
-Guardrails:
-
-- Golden tests are enabled by default; similarity threshold 0.9.
-- Determinism: export `OMP_NUM_THREADS=1` in scripts; pinned VTK in containers.
+This plan should bring the build system to a maintainable state, enabling reliable CI artifacts while leaving headroom for future scientific validation and publication flows.

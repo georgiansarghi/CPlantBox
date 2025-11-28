@@ -1,8 +1,24 @@
-# Disable LTO/IPO to avoid toolchain issues in container builds
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
-#
-# 1. Make CPlantBox library
-#
+message(STATUS "Project dir: ${PROJECT_SOURCE_DIR}")
+message(STATUS "Current source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "Project binary dir: ${PROJECT_BINARY_DIR}")
+
+
+# -----------------------------
+# 1. Dependencies & Includes
+# -----------------------------
+set(_CPB_PYTHON_COMPONENTS Interpreter Development)
+find_package(Python3 QUIET COMPONENTS ${_CPB_PYTHON_COMPONENTS})
+
+if(NOT Python3_FOUND)
+  message(WARNING "Python3 Development component not available; retrying with Development.Module (no libpython).")
+  set(_CPB_PYTHON_COMPONENTS Interpreter Development.Module)
+  # Clear cached outcome from the previous attempt to force a fresh lookup
+  unset(Python3_FOUND CACHE)
+  unset(Python3_Development_FOUND CACHE)
+  unset(Python3_LIBRARIES CACHE)
+  find_package(Python3 COMPONENTS ${_CPB_PYTHON_COMPONENTS} REQUIRED)
+endif()
+add_subdirectory(external/pybind11)
 
 include_directories(structural)
 include_directories(functional)
@@ -191,11 +207,11 @@ add_library(libbtf SHARED IMPORTED)
 add_library(libcolamd SHARED IMPORTED)
 add_library(suitesparseconfig SHARED IMPORTED)
 if(USE_SYSTEM_SUITESPARSE)
-  find_library(SS_KLU klu)
-  find_library(SS_AMD amd)
-  find_library(SS_COLAMD colamd)
-  find_library(SS_BTF btf)
-  find_library(SS_CONFIG suitesparseconfig)
+  find_library(SS_KLU NAMES klu libklu)
+  find_library(SS_AMD NAMES amd libamd)
+  find_library(SS_COLAMD NAMES colamd libcolamd)
+  find_library(SS_BTF NAMES btf libbtf)
+  find_library(SS_CONFIG NAMES suitesparseconfig libsuitesparseconfig)
   if(NOT SS_KLU OR NOT SS_AMD OR NOT SS_COLAMD OR NOT SS_BTF OR NOT SS_CONFIG)
     message(FATAL_ERROR "Requested USE_SYSTEM_SUITESPARSE but required libraries not found (klu, amd, colamd, btf, suitesparseconfig)")
   endif()
@@ -237,21 +253,28 @@ if(USE_SYSTEM_SUNDIALS)
     list(APPEND _SD_HINTS $ENV{SUNDIALS_ROOT})
   endif()
   # Use HINTS with PATH_SUFFIXES to locate libraries in lib/ or lib64/
-  find_library(SD_ARKODE sundials_arkode HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_CVODE sundials_cvode HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_NVECSERIAL sundials_nvecserial HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNLINSOLBAND sundials_sunlinsolband HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNLINSOLDENSE sundials_sunlinsoldense HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNLINSOLKLU sundials_sunlinsolklu HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNLINSOLPCG sundials_sunlinsolpcg HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNLINSOLSPBCGS sundials_sunlinsolspbcgs HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNLINSOLSPFGMR sundials_sunlinsolspfgmr HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNLINSOLSPGMR sundials_sunlinsolspgmr HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNLINSOLSPTFQMR sundials_sunlinsolsptfqmr HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNMATRIXBAND sundials_sunmatrixband HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNMATRIXDENSE sundials_sunmatrixdense HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNMATRIXSPARSE sundials_sunmatrixsparse HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
-  find_library(SD_SUNNONLINSOLNEWTON sundials_sunnonlinsolnewton HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_ARKODE NAMES sundials_arkode libsundials_arkode HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_CVODE NAMES sundials_cvode libsundials_cvode HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_NVECSERIAL NAMES sundials_nvecserial libsundials_nvecserial HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNLINSOLBAND NAMES sundials_sunlinsolband libsundials_sunlinsolband HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNLINSOLDENSE NAMES sundials_sunlinsoldense libsundials_sunlinsoldense HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNLINSOLKLU NAMES sundials_sunlinsolklu libsundials_sunlinsolklu HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNLINSOLPCG NAMES sundials_sunlinsolpcg libsundials_sunlinsolpcg HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNLINSOLSPBCGS NAMES sundials_sunlinsolspbcgs libsundials_sunlinsolspbcgs HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNLINSOLSPFGMR NAMES sundials_sunlinsolspfgmr libsundials_sunlinsolspfgmr HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNLINSOLSPGMR NAMES sundials_sunlinsolspgmr libsundials_sunlinsolspgmr HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNLINSOLSPTFQMR NAMES sundials_sunlinsolsptfqmr libsundials_sunlinsolsptfqmr HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNMATRIXBAND NAMES sundials_sunmatrixband libsundials_sunmatrixband HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNMATRIXDENSE NAMES sundials_sunmatrixdense libsundials_sunmatrixdense HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNMATRIXSPARSE NAMES sundials_sunmatrixsparse libsundials_sunmatrixsparse HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_SUNNONLINSOLNEWTON NAMES sundials_sunnonlinsolnewton libsundials_sunnonlinsolnewton HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  find_library(SD_CORE NAMES sundials_core libsundials_core HINTS ${_SD_HINTS} PATH_SUFFIXES lib lib64)
+  
+  message(STATUS "Debugging SUNDIALS paths:")
+  message(STATUS "  SD_ARKODE: ${SD_ARKODE}")
+  message(STATUS "  SD_CVODE: ${SD_CVODE}")
+  message(STATUS "  SD_CORE: ${SD_CORE}")
+
   if(NOT SD_CVODE OR NOT SD_NVECSERIAL)
     message(FATAL_ERROR "Requested USE_SYSTEM_SUNDIALS but required libraries not fully found")
   endif()
@@ -296,6 +319,10 @@ if(USE_SYSTEM_SUNDIALS)
   if(SD_SUNNONLINSOLNEWTON)
     set_property(TARGET sundials_sunnonlinsolnewton PROPERTY IMPORTED_LOCATION "${SD_SUNNONLINSOLNEWTON}")
   endif()
+  if(SD_CORE)
+    add_library(sundials_core SHARED IMPORTED)
+    set_property(TARGET sundials_core PROPERTY IMPORTED_LOCATION "${SD_CORE}")
+  endif()
 else()
   _set_imported(arkode "${SUNDIALS_LIB_BIN}/libsundials_arkode.a" "${SUNDIALS_LIB_SRC}/libsundials_arkode.a")
   _set_imported(sundials_cvode "${SUNDIALS_LIB_BIN}/libsundials_cvode.a" "${SUNDIALS_LIB_SRC}/libsundials_cvode.a")
@@ -313,6 +340,13 @@ else()
   _set_imported(sundials_sunmatrixsparse "${SUNDIALS_LIB_BIN}/libsundials_sunmatrixsparse.a" "${SUNDIALS_LIB_SRC}/libsundials_sunmatrixsparse.a")
   _set_imported(sundials_sunnonlinsolnewton "${SUNDIALS_LIB_BIN}/libsundials_sunnonlinsolnewton.a" "${SUNDIALS_LIB_SRC}/libsundials_sunnonlinsolnewton.a")
 endif()
+
+# Collect optional libraries
+set(OPTIONAL_SUNDIALS_LIBS)
+if(TARGET sundials_core)
+  list(APPEND OPTIONAL_SUNDIALS_LIBS sundials_core)
+endif()
+
 target_link_libraries(CPlantBox PUBLIC
                         # SUNDIALS components (order mostly independent)
                         sundials_sunnonlinsolnewton 
@@ -330,6 +364,7 @@ target_link_libraries(CPlantBox PUBLIC
                         sundials_sunlinsolspbcgs 
                         sundials_sunlinsolpcg 
                         arkode 
+                        ${OPTIONAL_SUNDIALS_LIBS}
                         
                         # SuiteSparse (order matters for static linking):
                         # user first, then its dependencies
@@ -414,44 +449,64 @@ endif()
 	)
 endif()
 
+if(APPLE)
+    set(rpath "@loader_path")
+else()
+    set(rpath "$ORIGIN")
+endif()
+
 # Set library output directory
 set_target_properties(CPlantBox PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     BUILD_WITH_INSTALL_RPATH TRUE
-    INSTALL_RPATH "$ORIGIN"
+    INSTALL_RPATH "${rpath}"
 )
 
 # -----------------------------
 # Python binding
 # -----------------------------
 
-pybind11_add_module(plantbox PyPlantBox.cpp)
-target_link_libraries(plantbox PRIVATE CPlantBox Python3::Module)
+pybind11_add_module(_plantbox PyPlantBox.cpp)
+target_link_libraries(_plantbox PRIVATE CPlantBox Python3::Module)
 
-set_target_properties(plantbox PROPERTIES
-    INSTALL_RPATH "$ORIGIN"
+set_target_properties(_plantbox PROPERTIES
+    INSTALL_RPATH "${rpath}"
 )
 
 # Install plantbox module into Python site-packages
-install(TARGETS CPlantBox LIBRARY DESTINATION "${Python3_SITEARCH}/plantbox") 
-install(TARGETS plantbox LIBRARY DESTINATION "${Python3_SITEARCH}/plantbox")
+install(TARGETS CPlantBox 
+    LIBRARY DESTINATION plantbox
+    RUNTIME DESTINATION plantbox
+    ARCHIVE DESTINATION plantbox
+) 
+install(TARGETS _plantbox 
+    LIBRARY DESTINATION plantbox
+    RUNTIME DESTINATION plantbox
+    ARCHIVE DESTINATION plantbox
+)
 
-install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${Python3_SITEARCH}/plantbox)
+# install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION plantbox)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/visualisation DESTINATION ${Python3_SITEARCH}/plantbox
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/visualisation DESTINATION plantbox
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rsml DESTINATION ${Python3_SITEARCH}/plantbox
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rsml DESTINATION plantbox
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/structural DESTINATION ${Python3_SITEARCH}/plantbox
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/structural DESTINATION plantbox
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/functional DESTINATION ${Python3_SITEARCH}/plantbox
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/functional DESTINATION plantbox
 		FILES_MATCHING
         PATTERN "*.py"
         PATTERN "__pycache__" EXCLUDE)
 
+if(SKBUILD)
+  # Install model parameter data into the wheel under plantbox/, when building via skbuild
+  install(DIRECTORY ${CMAKE_SOURCE_DIR}/modelparameter
+          DESTINATION plantbox
+          PATTERN "__pycache__" EXCLUDE)
+endif()
