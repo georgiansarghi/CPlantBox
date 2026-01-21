@@ -9,11 +9,6 @@ on:
       - master
   workflow_dispatch:
 
-defaults:
-  run:
-    shell: bash
-    working-directory: ${{ github.workspace }}
-
 jobs:
   macos:
     name: macOS wheel (${{ matrix.os }})
