@@ -1,20 +1,21 @@
 <plant>
     <seed name="undefined" subType="0">
         <parameter name="delayDefinition" value="0"/>
-        <parameter name="maxTi" value="0"/>
+        <parameter name="delayDefinitionShoot" value="0"/>
+        <parameter name="maxTil" value="0"/>
         <parameter name="a" value="0.1"/>
         <parameter name="delayB" value="3"/>
         <parameter name="delayRC" value="1e+09"/>
         <parameter name="delaySB" value="1e+09"/>
-        <parameter name="delayTi" value="1e+09"/>
+        <parameter name="delayTil" value="1e+09"/>
         <parameter name="dx" value="0.25"/>
         <parameter name="dxMin" value="1e-06"/>
         <parameter name="firstB" value="10"/>
         <parameter name="firstSB" value="1e+09"/>
-        <parameter name="firstTi" value="1e+09"/>
+        <parameter name="firstTil" value="1e+09"/>
         <parameter name="ldelay" value="-1"/>
         <parameter name="maxB" value="100"/>
-        <parameter name="nC" value="0"/>
+        <parameter name="nC" value="7"/>
         <parameter name="nz" value="1"/>
         <parameter name="seedPos.x" value="0"/>
         <parameter name="seedPos.y" value="0"/>
@@ -25,11 +26,11 @@
         <parameter name="gf" value="1"/>
         <parameter name="tropismT" value="1"/>
         <parameter name="a" value="0.1"/>
-        <parameter name="colorB" value="0.2"/>
-        <parameter name="colorG" value="0.2"/>
-        <parameter name="colorR" value="0.60000002"/>
         <parameter name="dx" value="0.5"/>
         <parameter name="dxMin" value="1e-06"/>
+        <parameter name="hairsElongation" value="0"/>
+        <parameter name="hairsLength" value="0"/>
+        <parameter name="hairsZone" value="0"/>
         <parameter name="la" value="10"/>
         <parameter name="lb" value="2"/>
         <parameter name="ldelay" value="-1"/>
@@ -47,11 +48,11 @@
         <parameter name="gf" value="1"/>
         <parameter name="tropismT" value="1"/>
         <parameter name="a" value="0.1"/>
-        <parameter name="colorB" value="0.2"/>
-        <parameter name="colorG" value="0.2"/>
-        <parameter name="colorR" value="0.60000002"/>
         <parameter name="dx" value="0.1"/>
         <parameter name="dxMin" value="1e-06"/>
+        <parameter name="hairsElongation" value="0"/>
+        <parameter name="hairsLength" value="0"/>
+        <parameter name="hairsZone" value="0"/>
         <parameter name="la" value="25"/>
         <parameter name="lb" value="0"/>
         <parameter name="ldelay" value="-1"/>

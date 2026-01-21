@@ -1,18 +1,4 @@
----
-Language: Cpp
+BasedOnStyle: LLVM
 IndentWidth: 4
-UseTab: Never
-TabWidth: 4
-ContinuationIndentWidth: 4
-BreakBeforeBraces: Linux
-ColumnLimit: 120
-AllowShortFunctionsOnASingleLine: None
-AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
-BinPackArguments: false
-BinPackParameters: false
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
-SortIncludes: false
-SortUsingDeclarations: false
-AlignConsecutiveDeclarations: false
-AlignConsecutiveAssignments: false
+ColumnLimit: 100
+AllowShortFunctionsOnASingleLine: Empty

@@ -68,11 +68,11 @@ public:
     double getAge() const { return age; } ///< return age of the organ
     double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
     double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
-	double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
-	virtual double calcAge(double length) const {throw std::runtime_error( "calcAge() not implemented" ); } ///< needed for @Organ::getOrgans
-	virtual double calcLength(double age){throw std::runtime_error( "calcLength() not implemented" ); }
+    double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
+    virtual double calcAge(double length) const; ///< needed for @Organ::getOrgans
+    virtual double calcLength(double age);
 
-	/* geometry */
+    /* geometry */
     int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
     int getNumberOfSegments() const { return nodes.size()-1; } ///<  per default, the organ is represented by a polyline, i.e. getNumberOfNodes()-1
     Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< absolute coordinate of the organs origin

@@ -44,8 +44,8 @@ public:
 	std::string toString() const override;
 
     /* exact from analytical equations */
-    double calcLength(double age); ///< analytical length of the stem
-    double calcAge(double length) const; ///< analytical age of the stem
+    double calcLength(double age) override; ///< analytical length of the stem
+    double calcAge(double length) const override; ///< analytical age of the stem
 
     /* abbreviations */
     std::shared_ptr<StemRandomParameter> getStemRandomParameter() const;  ///< root type parameter of this root

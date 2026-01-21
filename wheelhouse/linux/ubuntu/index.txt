@@ -1,0 +1,5 @@
+# Ubuntu-built (non-manylinux) wheels — for local testing only
+2026-01-20T17:35:45Z
+Python 3.11.9
+Artifacts:
+wheelhouse/linux/ubuntu/cplantbox-2.1.0-cp310-cp310-linux_x86_64.whl

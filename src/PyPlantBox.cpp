@@ -94,7 +94,7 @@ public:
 /**
  * plantbox
  */
-PYBIND11_MODULE(plantbox, m) {
+PYBIND11_MODULE(_plantbox, m) {
     /*
      * mymath
      */

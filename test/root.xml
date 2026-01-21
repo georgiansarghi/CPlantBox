@@ -5,16 +5,16 @@
     <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
     <parameter name="a" value="0.1"/>
     <!--radius [cm]-->
-    <parameter name="colorB" value="0.2"/>
-    <!--Root color, blue component [0.-1.]-->
-    <parameter name="colorG" value="0.2"/>
-    <!--Root color, green component [0.-1.]-->
-    <parameter name="colorR" value="0.60000002"/>
-    <!--Root color, red component [0.-1.]-->
     <parameter name="dx" value="0.25"/>
     <!--Axial resolution [cm] (maximal segment size)-->
     <parameter name="dxMin" value="1e-06"/>
     <!--Axial resolution [cm] (minimal segment size)-->
+    <parameter name="hairsElongation" value="0"/>
+    <!--Zone behind the tip without root hairs  [cm]-->
+    <parameter name="hairsLength" value="0"/>
+    <!--Root hair length [cm]-->
+    <parameter name="hairsZone" value="0"/>
+    <!--Length of the root hair zone [cm]-->
     <parameter name="la" value="1.5"/>
     <!--Apical zone [cm]-->
     <parameter name="lb" value="5.5"/>

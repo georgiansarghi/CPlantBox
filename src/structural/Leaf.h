@@ -52,8 +52,8 @@ public:
 
 	/* exact from analytical equations */
 	double calcCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
-	double calcLength(double age); ///< analytical length of the leaf
-	double calcAge(double length) const; ///< analytical age of the leaf
+	double calcLength(double age) override; ///< analytical length of the leaf
+	double calcAge(double length) const override; ///< analytical age of the leaf
 
 	/* abbreviations */
 	std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const;  ///< root type parameter of this root

@@ -1,5 +1,4 @@
 # build system clutter
-build-*
 Testing
 *.so
 src/CMakeFiles/
@@ -49,10 +48,18 @@ __pycache__
 Debug/
 *.vtp
 
+# Python build artifacts
+dist/
+_skbuild/
+release_artifacts/
+plantbox/_version.py
+
 # Jupyter notebook
 tutorial/jupyter/.ipynb_checkpoints/
 .ipynb_checkpoints/
 
 # images
 *.png
-.vscode/settings.json
+.venv/
+venv/
+env/

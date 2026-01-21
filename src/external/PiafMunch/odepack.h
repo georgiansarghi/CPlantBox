@@ -24,7 +24,7 @@
 -----------------------------------------------------------------------------------------------------------------------------------*/
 
 #ifndef NSOLVE_H
-#define NLSOLVE_H
+#define NSOLVE_H
 
 #include <stdio.h>
 #include "PiafMunch/PM_arrays.h"

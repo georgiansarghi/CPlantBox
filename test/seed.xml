@@ -1,7 +1,9 @@
 <seed name="best_seed" subType="0">
     <parameter name="delayDefinition" value="0"/>
-    <!--method implemented to evaluate lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
-    <parameter name="maxTi" value="0"/>
+    <!--method implemented to evaluate root lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
+    <parameter name="delayDefinitionShoot" value="0"/>
+    <!--method implemented to evaluate shoot lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
+    <parameter name="maxTil" value="0"/>
     <!--Maximal number of tillers [1]-->
     <parameter name="a" value="0.1"/>
     <!--radius [cm]-->
@@ -11,7 +13,7 @@
     <!--Delay between the root crowns [day]-->
     <parameter name="delaySB" value="4"/>
     <!--Time delay between the shoot borne roots [day]-->
-    <parameter name="delayTi" value="1e+09"/>
+    <parameter name="delayTil" value="1e+09"/>
     <!--Time delay between the tillers [day]-->
     <parameter name="dx" value="0.25"/>
     <!--Axial resolution [cm] (maximal segment size)-->
@@ -21,7 +23,7 @@
     <!--Emergence of first basal root [day]-->
     <parameter name="firstSB" value="21"/>
     <!--First emergence of a shoot borne root [day]-->
-    <parameter name="firstTi" value="1e+09"/>
+    <parameter name="firstTil" value="1e+09"/>
     <!--Emergence of first tiller [day]-->
     <parameter name="ldelay" value="-1"/>
     <!--Lateral emergence delay [day]-->
