@@ -27,7 +27,7 @@ echo "[manylinux ${ARCH}] Building + repairing wheels (cp39-cp312)"
 DOCKER_CMD=$(cat <<'BASH'
 set -euo pipefail
 yum -y install suitesparse-devel >/dev/null 2>&1 || true
-git submodule update --init --recursive
+git -c safe.directory=/project submodule update --init --recursive
 rm -rf dist/ _skbuild/
 export CMAKE_BUILD_PARALLEL_LEVEL=1
 

@@ -38,11 +38,14 @@ OUT_DIR="wheelhouse/macos"
 mkdir -p "$OUT_DIR"
 
 log_info "[macOS-build] Installing build backend and cleaning build dirs..."
-python3 -m pip -q install -U pip build
+BUILD_VENV=$(mktemp -d 2>/dev/null || mktemp -d -t cplantbox-build)
+python3 -m venv "$BUILD_VENV"
+BUILD_PY="$BUILD_VENV/bin/python"
+"$BUILD_PY" -m pip -q install -U pip build
 rm -rf dist/ _skbuild/
 
 log_info "[macOS-build] Building wheel (CMAKE_ARGS=${CMAKE_ARGS})..."
-python3 -m build --wheel
+"$BUILD_PY" -m build --wheel
 
 if ls dist/*.whl >/dev/null 2>&1; then
   log_info "[macOS-build] Built wheel(s):"
@@ -52,13 +55,15 @@ if ls dist/*.whl >/dev/null 2>&1; then
   {
     echo "# macOS-built wheels"
     date -u +"%Y-%m-%dT%H:%M:%SZ"
-    python3 -V || true
+    "$BUILD_PY" -V || true
     echo "Artifacts:"
     ls -1 "$OUT_DIR"/*.whl || true
   } > "$OUT_DIR/index.txt"
   log_info "[macOS-build] Done."
+  rm -rf "$BUILD_VENV"
 else
   log_warn "[macOS-build] No wheels found under dist/*.whl"
+  rm -rf "$BUILD_VENV"
 fi
 
 
