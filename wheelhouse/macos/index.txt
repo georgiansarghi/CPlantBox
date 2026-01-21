@@ -1,5 +1,5 @@
 # macOS-built wheels
-2025-11-27T18:33:20Z
+2026-01-20T15:37:50Z
 Python 3.11.9
 Artifacts:
 wheelhouse/macos/cplantbox-2.1.0-cp310-cp310-macosx_15_0_arm64.whl

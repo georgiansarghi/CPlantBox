@@ -18,7 +18,6 @@ if(NOT Python3_FOUND)
   unset(Python3_LIBRARIES CACHE)
   find_package(Python3 COMPONENTS ${_CPB_PYTHON_COMPONENTS} REQUIRED)
 endif()
-add_subdirectory(external/pybind11)
 
 include_directories(structural)
 include_directories(functional)
@@ -34,27 +33,6 @@ include_directories(${PROJECT_SOURCE_DIR}/src/external/sundials/include/) # for 
 # -----------------------------
 # Shared Library
 # -----------------------------
-set(CPLANTBOX_SOURCES
-    structural/organparameter.cpp
-    structural/rootparameter.cpp
-    structural/seedparameter.cpp
-    structural/leafparameter.cpp
-    structural/stemparameter.cpp
-    structural/Organ.cpp
-    structural/Root.cpp
-    structural/RootDelay.cpp
-    structural/Seed.cpp
-    structural/Stem.cpp
-    structural/Leaf.cpp
-    structural/Plant.cpp
-    structural/Organism.cpp
-	structural/Plant.cpp            			
-    structural/RootSystem.cpp
-    structural/MappedOrganism.cpp
-    structural/sdf.cpp
-    structural/SegmentAnalyser.cpp
-    structural/tropism.cpp
-
 # Build CPlantBox as STATIC when building wheels (scikit-build), to embed into the
 # Python extension and avoid shipping a separate shared library in wheels.
 set(CPB_BUILD_SHARED ON)
@@ -84,7 +62,6 @@ add_library(CPlantBox SHARED
             structural/SegmentAnalyser.cpp            
             structural/tropism.cpp            
 			
-            functional/XylemFlux.cpp
 			functional/Photosynthesis.cpp
 			functional/Perirhizal.cpp
 			functional/PlantHydraulicParameters.cpp
@@ -131,7 +108,6 @@ add_library(CPlantBox STATIC
             structural/SegmentAnalyser.cpp            
             structural/tropism.cpp            
             
-            functional/XylemFlux.cpp
             functional/Photosynthesis.cpp
             functional/Perirhizal.cpp
             functional/PlantHydraulicParameters.cpp
@@ -421,34 +397,6 @@ endif()
 # Ensure static CPlantBox is fully included in the extension on Linux wheel builds
 
 
-# Install rules to allow packaging via scikit-build-core
-install(TARGETS _plantbox
-        LIBRARY DESTINATION plantbox
-        ARCHIVE DESTINATION plantbox
-        RUNTIME DESTINATION plantbox
-        )
-
-# Install model parameter data into the wheel under plantbox/, when building via skbuild
-if(SKBUILD)
-  # Start conservatively: include the structural parameters used by smoke tests
-  install(DIRECTORY ${CMAKE_SOURCE_DIR}/modelparameter/structural/
-          DESTINATION plantbox/modelparameter/structural
-          FILES_MATCHING PATTERN "*")
-endif()
-			
-# Avoid forcing output directories; keep default so wheels/deploys are simpler
-# set_target_properties(plantbox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
-
-	set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
-
-	target_include_directories(
-							CPlantBox
-							PUBLIC
-							${PROJECT_BINARY_DIR}/src/external/sundials/include
-							${PROJECT_BINARY_DIR}/src/external/suitsparse/include
-	)
-endif()
-
 if(APPLE)
     set(rpath "@loader_path")
 else()
@@ -461,20 +409,12 @@ set_target_properties(CPlantBox PROPERTIES
     BUILD_WITH_INSTALL_RPATH TRUE
     INSTALL_RPATH "${rpath}"
 )
-
-# -----------------------------
-# Python binding
-# -----------------------------
-
-pybind11_add_module(_plantbox PyPlantBox.cpp)
-target_link_libraries(_plantbox PRIVATE CPlantBox Python3::Module)
-
 set_target_properties(_plantbox PROPERTIES
     INSTALL_RPATH "${rpath}"
 )
 
 # Install plantbox module into Python site-packages
-install(TARGETS CPlantBox 
+install(TARGETS CPlantBox
     LIBRARY DESTINATION plantbox
     RUNTIME DESTINATION plantbox
     ARCHIVE DESTINATION plantbox

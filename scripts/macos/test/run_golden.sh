@@ -65,7 +65,10 @@ log_info "[macOS-run] Creating venv for golden test..."
 TEST_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t cplantbox-test)
 python3 -m venv "$TEST_DIR/venv"
 source "$TEST_DIR/venv/bin/activate"
-python3 -m pip -q install -U pip pytest vtk
+python3 -m pip -q install -U pip pytest
+# Prefer a stable vtk version; allow override via VTK_VERSION env
+VTK_VERSION=${VTK_VERSION:-9.2.6}
+python3 -m pip -q install "vtk==${VTK_VERSION}" || python3 -m pip -q install vtk
 python3 -m pip -q install "$WHEEL_PATH"
 
 # Use the macOS golden test runner that isolates sys.path and imports the wheel
