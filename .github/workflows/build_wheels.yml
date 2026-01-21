@@ -9,6 +9,11 @@ on:
       - master
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+    working-directory: ${{ github.workspace }}
+
 jobs:
   macos:
     name: macOS wheel (${{ matrix.os }})
@@ -28,7 +33,7 @@ jobs:
 
       - name: Build wheel
         run: |
-          ./scripts/macos/build/build-wheel.sh
+          bash ./scripts/macos/build/build-wheel.sh
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@v4
@@ -49,7 +54,7 @@ jobs:
 
       - name: Build manylinux wheels
         run: |
-          ./scripts/manylinux/build/build-wheels.sh x86_64
+          bash ./scripts/manylinux/build/build-wheels.sh x86_64
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@v4
