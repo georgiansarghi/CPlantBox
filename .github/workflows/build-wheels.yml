@@ -17,7 +17,7 @@ jobs:
       matrix:
         os: [macos-15, macos-26]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -31,7 +31,7 @@ jobs:
           bash ./scripts/macos/build/build-wheel.sh
 
       - name: Upload wheel artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: cplantbox-macos-${{ matrix.os }}
           path: wheelhouse/macos/*.whl
@@ -40,7 +40,7 @@ jobs:
     name: manylinux wheel (x86_64)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -52,7 +52,7 @@ jobs:
           bash ./scripts/manylinux/build/build-wheels.sh x86_64
 
       - name: Upload wheel artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: cplantbox-manylinux-x86_64
           path: wheelhouse/linux/manylinux2014_x86_64/*.whl
