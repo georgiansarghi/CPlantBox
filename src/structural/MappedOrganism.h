@@ -35,7 +35,6 @@ public:
 	std::map<int,double> sumSegFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
     std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes, int type = 0) const; ///< splits soil fluxes (per cell) into segment fluxes
 
-
     void setSoilGrid(const std::function<int(double,double,double)>& s, bool noChanges = false); ///< sets the soil, resets the mappers, and maps all segments
     void setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut = true, bool noChanges = false); ///< sets an underlying rectangular grid, and cuts all segments accordingly
     void mapSegments(const std::vector<Vector2i>& segs);
@@ -135,7 +134,6 @@ public:
     // I made all initializer functions virtual and having only the verbose as argument to avoid confusion, stochasity can be set by Organism::setStochastic
     void initializeLB(bool verbose = true) override { initialize_(verbose,  true); }; ///< overridden, length based initialization
 	void initializeDB(bool verbose = true) override { initialize_(verbose,  false); }; ///< overridden, delay based based initialization
-	void initialize(bool verbose = true) override { initializeLB(verbose); }; ///< overridden, to map initial nodes, segs
 	void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
 
     void printNodes(); ///< print information
