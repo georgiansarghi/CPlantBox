@@ -384,7 +384,7 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/external/pybind11/CMakeLists.txt")
 endif()
 add_subdirectory(external/pybind11)
 
-pybind11_add_module(_plantbox SHARED 
+pybind11_add_module(_plantbox
             PyPlantBox.cpp                                  
             )
 # Link Python module; on Linux wheel builds, embed static CPlantBox objects with whole-archive
